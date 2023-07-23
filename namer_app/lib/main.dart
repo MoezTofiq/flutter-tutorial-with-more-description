@@ -49,6 +49,18 @@ class MyAppState extends ChangeNotifier {
     // telling all the listeners if this state that a change has occurred:
     notifyListeners();
   }
+
+  // favorite button code and state:
+  var favorite = <WordPair>[]; // favorite is word pair array
+
+  void toggleFavorite() {
+    if (favorite.contains(current)) {
+      favorite.remove(current); // unfavorite the current word pair
+    } else {
+      favorite.add(current); // favorite the current word pair
+    }
+    notifyListeners(); //notify elements that are checking for this element change
+  }
 }
 
 // this is the widget that is home for the application as seen in the MyApp 'home' place
@@ -59,6 +71,14 @@ class MyHomePage extends StatelessWidget {
     // 'watch' is used to track the 'MyAppState' state
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
+
+    // logic for the favorite Icon:
+    IconData favoriteIcon;
+    if (appState.favorite.contains(pair)) {
+      favoriteIcon = Icons.favorite; // is favorite
+    } else {
+      favoriteIcon = Icons.favorite_border; //is not favorite
+    }
 
     return Scaffold(
       // this is a layout widget, this places the its children in a colum from top to bottom
@@ -73,15 +93,31 @@ class MyHomePage extends StatelessWidget {
             BigCard(pair: pair),
             SizedBox(height: 10), // just takes spaces to make a visual gape
             // adding a button to the application:
-            ElevatedButton(
-                onPressed: () {
-                  // printing to the console:
-                  print('@@ calling the getNext method @@');
-                  // calling the assigned function to it:
-                  appState.getNext();
-                },
-                // adding the text for the button:
-                child: Text('Next'))
+            Row(
+              // the children are shown in a row
+              // we can use mainAxisAlignment to center them but we can also use :
+              mainAxisSize: MainAxisSize
+                  .min, // this tells rows to take the least amount of space necessary
+              children: [
+                ElevatedButton.icon(
+                    // button with Icon like
+                    onPressed: () {
+                      appState.toggleFavorite();
+                    },
+                    icon: Icon(favoriteIcon),
+                    label: Text('Like')),
+                SizedBox(width: 10), // spacing between buttons
+                ElevatedButton(
+                    onPressed: () {
+                      // printing to the console:
+                      print('@@ calling the getNext method @@');
+                      // calling the assigned function to it:
+                      appState.getNext();
+                    },
+                    // adding the text for the button:
+                    child: Text('Next')),
+              ],
+            )
           ], // there is no need to add a comma but this is so when you add an other element it makes it trivial
         ),
       ),
