@@ -26,10 +26,10 @@ here everything is set up for the application:
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         ),
         home: MyHomePage(),
-      // ),
+      ),
     );
   }
 }
@@ -58,26 +58,74 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // 'watch' is used to track the 'MyAppState' state
     var appState = context.watch<MyAppState>();
+    var pair = appState.current;
 
     return Scaffold(
       // this is a layout widget, this places the its children in a colum from top to bottom
-      body: Column(
-        children: [
-          // this is a simple text:
-          Text('text no 1:'),
-          // this is a text with the current app state in lower case:
-          Text('this is the name : ${appState.current.asSnakeCase}'),
-          // adding a button to the application:
-          ElevatedButton(
-              onPressed: () {
-                // printing to the console:
-                print('@@ calling the getNext method @@');
-                // calling the assigned function to it:
-                appState.getNext();
-              },
-              // adding the text for the button:
-              child: Text('Next'))
-        ], // there is no need to add a comma but this is so when you add an other element it makes it trivial
+      body: Center(
+        // this is to center the colum in the
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment
+              .center, // this is to center the children of the colum 'Scaffold'
+          children: [
+            // this is a simple text:
+            Text('This is a random word pair: '),
+            BigCard(pair: pair),
+            SizedBox(height: 10), // just takes spaces to make a visual gape
+            // adding a button to the application:
+            ElevatedButton(
+                onPressed: () {
+                  // printing to the console:
+                  print('@@ calling the getNext method @@');
+                  // calling the assigned function to it:
+                  appState.getNext();
+                },
+                // adding the text for the button:
+                child: Text('Next'))
+          ], // there is no need to add a comma but this is so when you add an other element it makes it trivial
+        ),
+      ),
+    );
+  }
+}
+
+class BigCard extends StatelessWidget {
+  // this is made to make the logic separate for displaying the pair and nothing else.
+  // this is what is required to pass to the class:
+  const BigCard({
+    super.key,
+    required this.pair,
+  });
+
+  final WordPair pair;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(
+        context); // this gets the current theme of the application through context
+    final style = theme.textTheme.displayMedium!.copyWith(
+      color: theme.colorScheme.onPrimary,
+    );
+    /* style above is for the text in the word pair
+      'theme.textTheme' is to access the apps font theme
+      'displayMedium' is reserved for short,important text, for example a heading or something short to catch their attention
+      '!' is to avoid the null safety from dart, its called the bang operator, this is to tell dart that we know that 'displayMedium' is definitely not null in this case
+      'copyWith()' returns a copy of the text style with the changes you define, eg the color of the text.
+      */
+    return Card(
+      // 'wrap with widget' => renamed to card
+      // adding this made the back-ground:
+      color: theme.colorScheme.primary,
+      elevation: 10, // elevate the card for the shadow of the card
+      child: Padding(
+        //done with ctrl + . => wrap with padding
+        padding: const EdgeInsets.all(20), // this is the measurement
+        child: Text(
+          pair.asLowerCase,
+          style: style,
+          semanticsLabel:
+              "${pair.first} ${pair.second}", // this is for the screen readers, even though flutter takes care of it by its self this is an intervention to help the screen reader pronounce it correctly
+        ),
       ),
     );
   }
