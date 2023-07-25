@@ -51,75 +51,130 @@ class MyAppState extends ChangeNotifier {
   }
 
   // favorite button code and state:
-  var favorite = <WordPair>[]; // favorite is word pair array
+  var favorites = <WordPair>[]; // favorite is word pair array
 
   void toggleFavorite() {
-    if (favorite.contains(current)) {
-      favorite.remove(current); // unfavorite the current word pair
+    if (favorites.contains(current)) {
+      favorites.remove(current); // unfavorite the current word pair
     } else {
-      favorite.add(current); // favorite the current word pair
+      favorites.add(current); // favorite the current word pair
     }
     notifyListeners(); //notify elements that are checking for this element change
   }
 }
 
-// this is the widget that is home for the application as seen in the MyApp 'home' place
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   @override
-  // the build is called every time the widget 'circumstances'? changes to keep it up to date
+  State<MyHomePage> createState() =>
+      _MyHomePageState(); // '_' means that this is a private class in dart
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  //this widget has its own state called MyHomePage
+  var selectedIndex = 0;
+  @override
   Widget build(BuildContext context) {
-    // 'watch' is used to track the 'MyAppState' state
+    // this is for catering for the page change:
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page =
+            Placeholder(); // this is a widget for making a placeholder when there is no ui implemented
+        break;
+      default:
+        throw UnimplementedError(
+            'no widget for $selectedIndex'); // this follows the fail-fast principle, meaning it will fail and let the one that called it cater for the error
+    }
+    return LayoutBuilder(builder: (context, constraints) {
+      // this is to make the navigation rail extend when there is enough space, layout builder is called every time the constraints change, eg: resizing the window or changing the phone screen orientation, the widgets in the home screen resize
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              // this is to avoid the navigation rail being obscured by a notch or status bar
+              child: NavigationRail(
+                extended: constraints.maxWidth >=
+                    600, // 600 here are logical pixels, so it stays the same wether its on lower or higher resolutions
+                destinations: [
+                  // this is for the icons on navigation bar
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home),
+                    label: Text('Home'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.favorite),
+                    label: Text('Favorites'),
+                  ),
+                ],
+                selectedIndex:
+                    selectedIndex, // this is what is currently selected
+                onDestinationSelected: (value) {
+                  // this tells what happens when the user selects on of the icons
+                  setState(() {
+                    // this is similar to notifyListeners() in that it makes sure that the ui updates.
+                    selectedIndex = value;
+                  });
+                },
+              ),
+            ),
+            Expanded(
+              // this is for the row, it allows the child to take as much space as needed while the rest of the children in the row take as little as needed
+              child: Container(
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer, // this is for the colored background
+                child: page, // this is to show which page to display
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class GeneratorPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
 
-    // logic for the favorite Icon:
-    IconData favoriteIcon;
-    if (appState.favorite.contains(pair)) {
-      favoriteIcon = Icons.favorite; // is favorite
+    IconData icon;
+    if (appState.favorites.contains(pair)) {
+      icon = Icons.favorite;
     } else {
-      favoriteIcon = Icons.favorite_border; //is not favorite
+      icon = Icons.favorite_border;
     }
 
-    return Scaffold(
-      // this is a layout widget, this places the its children in a colum from top to bottom
-      body: Center(
-        // this is to center the colum in the
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment
-              .center, // this is to center the children of the colum 'Scaffold'
-          children: [
-            // this is a simple text:
-            Text('This is a random word pair: '),
-            BigCard(pair: pair),
-            SizedBox(height: 10), // just takes spaces to make a visual gape
-            // adding a button to the application:
-            Row(
-              // the children are shown in a row
-              // we can use mainAxisAlignment to center them but we can also use :
-              mainAxisSize: MainAxisSize
-                  .min, // this tells rows to take the least amount of space necessary
-              children: [
-                ElevatedButton.icon(
-                    // button with Icon like
-                    onPressed: () {
-                      appState.toggleFavorite();
-                    },
-                    icon: Icon(favoriteIcon),
-                    label: Text('Like')),
-                SizedBox(width: 10), // spacing between buttons
-                ElevatedButton(
-                    onPressed: () {
-                      // printing to the console:
-                      print('@@ calling the getNext method @@');
-                      // calling the assigned function to it:
-                      appState.getNext();
-                    },
-                    // adding the text for the button:
-                    child: Text('Next')),
-              ],
-            )
-          ], // there is no need to add a comma but this is so when you add an other element it makes it trivial
-        ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          BigCard(pair: pair),
+          SizedBox(height: 10),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
+                icon: Icon(icon),
+                label: Text('Like'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.getNext();
+                },
+                child: Text('Next'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
