@@ -81,8 +81,8 @@ class _MyHomePageState extends State<MyHomePage> {
         page = GeneratorPage();
         break;
       case 1:
-        page =
-            Placeholder(); // this is a widget for making a placeholder when there is no ui implemented
+        // page = Placeholder(); // this is a widget for making a placeholder when there is no ui implemented
+        page = FavoritesPage();
         break;
       default:
         throw UnimplementedError(
@@ -136,6 +136,55 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// // favorites page: made by me:
+// class FavoritesPage extends StatelessWidget {
+//   const FavoritesPage({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     var appState = context.watch<MyAppState>();
+//     var favorites = appState.favorites;
+//     // getting all the favorites in a array of bigCards
+
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [for (var word in favorites) BigCard(pair: word)],
+//       ),
+//     );
+//   }
+// }
+// //made by me.
+// by flutter tutorial:
+class FavoritesPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    if (appState.favorites.isEmpty) {
+      return Center(
+        child: Text('No favorites yet.'),
+      );
+    }
+
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text('You have '
+              '${appState.favorites.length} favorites:'),
+        ),
+        for (var pair in appState.favorites)
+          ListTile(
+            leading: Icon(Icons.favorite),
+            title: Text(pair.asLowerCase),
+          ),
+      ],
+    );
+  }
+}
+
+// word pair page:
 class GeneratorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
